@@ -6,6 +6,7 @@ buildscript {
             url "https://plugins.gradle.org/m2/"
         }
         jcenter()
+        mavenLocal()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.4.2'
@@ -27,6 +28,7 @@ apply from: 'buildtools/ColoredOutput.gradle'
 project.ext.set("GHACTIONS_FOLDING", true)
 //Generate help pages
 apply plugin: 'com.moowork.node'
+apply plugin: 'gr.aueb.android.barista-plugin'
 
 repositories {
     mavenCentral()
@@ -37,7 +39,7 @@ repositories {
         url "https://jitpack.io"
     }
     google()
-
+    mavenLocal()
 
 }
 
@@ -46,11 +48,16 @@ android {
 
     defaultConfig {
         applicationId project.APP_ID
-        minSdkVersion 16
+        minSdkVersion 26
         targetSdkVersion 28
 
         versionCode project.APP_VERSION_CODE
         versionName project.APP_VERSION_NAME
+
+        testInstrumentationRunner "android.test.InstrumentationTestRunner"
+        testInstrumentationRunner "com.android.test.runner.MultiDexTestRunner"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunnerArgument("listener", "gr.aueb.android.barista.core.BaristaRunListener")
     }
 
     //Adding API keys to BuildConfig
@@ -64,12 +71,16 @@ android {
     }
 
     buildTypes {
+        def BARISTA_ENDPOINT = "baristaEndpoint"
+        def STRING = "String"
+
         debug {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             useProguard true
             debuggable true
+            buildConfigField STRING, BARISTA_ENDPOINT, "\"192.168.42.58\""
         }
         release {
             minifyEnabled true
@@ -77,6 +88,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             useProguard true
             debuggable false
+            buildConfigField STRING, BARISTA_ENDPOINT, "\"192.168.42.58\""
         }
     }
 
@@ -127,7 +139,7 @@ android {
 
 dependencies {
 
-    implementation 'com.android.support:support-v4:27.1.1'
+    implementation 'com.android.support:support-v4:28.0.0'
     implementation 'com.google.android.gms:play-services-base:16.0.1'
     implementation 'com.google.android.gms:play-services-location:16.0.0'
     implementation 'com.google.android.gms:play-services-auth:16.0.1'
@@ -146,13 +158,13 @@ dependencies {
 
 
     //Android lollipop/material features including the Toolbar
-    implementation "com.android.support:appcompat-v7:27.1.1"
+    implementation "com.android.support:appcompat-v7:28.0.0"
 
     //Recycler view required by material dialog custom URL alert box
-    implementation "com.android.support:recyclerview-v7:27.1.1"
+    implementation "com.android.support:recyclerview-v7:28.0.0"
 
     //Cardviews
-    implementation "com.android.support:cardview-v7:27.1.1"
+    implementation "com.android.support:cardview-v7:28.0.0"
 
     //Material dialogs
     //Change to 0.8.5.7 when released
@@ -197,7 +209,7 @@ dependencies {
 
 
     //OKHTTP client
-    implementation 'com.squareup.okhttp3:okhttp:3.7.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.6.0'
 
     //OKHTTP interceptor, works with oauth signpost
     implementation 'se.akerfeldt:okhttp-signpost:1.1.0'
@@ -208,7 +220,9 @@ dependencies {
     }
 
     //Dropbox API 3
-    implementation 'com.dropbox.core:dropbox-core-sdk:3.0.3'
+    implementation('com.dropbox.core:dropbox-core-sdk:3.0.3') {
+        exclude module: 'jackson-core'
+    }
 
     //Markdown to HTML library
     implementation 'com.github.commonsguy:cwac-anddown:dedb48ec0f'
@@ -225,7 +239,14 @@ dependencies {
     testImplementation 'androidx.test:runner:1.2.0'
     testImplementation 'androidx.test:rules:1.2.0'
 
-
+    // Required for instrumented tests
+    androidTestImplementation "com.android.support.test:runner:1.0.2"
+    androidTestImplementation "com.android.support.test.espresso:espresso-core:3.0.2"
+    androidTestImplementation "com.android.support.test:rules:1.0.2"
+    //androidTestImplementation project(path: ':barista-android/barista')
+    androidTestImplementation("gr.aueb.android:barista:2.0-beta") {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
 }
 
 
@@ -385,3 +406,8 @@ task deleteReleaseAPKs(group:"build", type:Delete){
 }
 
 clean.dependsOn deleteReleaseAPKs
+
+baristaSettings {
+    port = 8040
+    host = "192.168.42.58"
+}

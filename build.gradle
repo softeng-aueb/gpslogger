@@ -6,12 +6,23 @@ buildscript {
         google()
         mavenCentral()
         jcenter()
+        mavenLocal()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.2'
+        classpath 'com.android.tools.build:gradle:3.5.3'
+        classpath 'gr.aueb.android:barista-plugin:1.1-SNAPSHOT'
     }
 }
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        mavenLocal()
+    }
+}
+
 
 project.ext.APP_ID = "com.mendhak.gpslogger"
 project.ext.APP_VERSION_CODE = 105
