@@ -10,8 +10,8 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.3'
-        classpath 'gr.aueb.android:barista-plugin:1.1-SNAPSHOT'
+        classpath 'com.android.tools.build:gradle:3.4.2'
+        classpath 'gr.aueb.android:barista-plugin:1.0.1'
     }
 }
 
